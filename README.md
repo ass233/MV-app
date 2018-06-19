@@ -1,7 +1,5 @@
 > 音乐播放器
 
-## Build Setup
-
 ``` bash
 # install dependencies
 npm install
