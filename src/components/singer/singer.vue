@@ -1,6 +1,7 @@
 <template>
     <div class="singer">
-      <list-view :data="singers"></list-view>
+      <list-view @select="selectSinger" :data="singers"></list-view>
+      <router-view></router-view>
     </div>
 </template>
 <script>
@@ -20,11 +21,15 @@ export default {
         this._getSingerList();
     },
     methods:{
+      selectSinger(singer){
+        this.$router.push({
+          path: `/singer/${singer.id}`
+        })
+      },
         _getSingerList(){
             getSingerList().then((res)=>{
                 if(res.code == ERR_OK ){
                     this.singers = this._normalizeSinger(res.data.list)
-                    console.log(this._normalizeSinger(this.singers));
                     //this._normalizeSinger(this.singers)
                 }
             });
@@ -62,7 +67,7 @@ export default {
           let hot = []
           for(let key in map) {
             let val = map[key]
-              if(val.title.match(/[a-zA-Z]/)){
+            if (val.title.match(/[a-zA-Z]/)) {
                 ret.push(val)
               }else if(val.title === HOT_NAME){
                 hot.push(val)
