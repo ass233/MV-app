@@ -4,3 +4,4 @@ const mutations = {
     state.singer = singer
   }
 }
+export default mutations
