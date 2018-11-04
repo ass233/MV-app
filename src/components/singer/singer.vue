@@ -5,10 +5,10 @@
     </div>
 </template>
 <script>
-import {getSingerList} from '../../api/singer'
-import {ERR_OK} from '../../api/config'
+import { getSingerList } from '../../api/singer'
+import { ERR_OK } from '../../api/config'
 import ListView from '../../base/listview/listview'
-import {mapMutations} from 'vuex'
+import { mapMutations } from 'vuex'
 const HOT_NAME = '热门'
 const HOT_SINGER_LEN = 10
 export default {
@@ -29,7 +29,7 @@ export default {
     },
     _getSingerList() {
       getSingerList().then((res) => {
-        if (res.code == ERR_OK) {
+        if (res.code === ERR_OK) {
           this.singers = this._normalizeSinger(res.data.list)
                     // this._normalizeSinger(this.singers)
         }
