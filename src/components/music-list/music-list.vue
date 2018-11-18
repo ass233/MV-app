@@ -7,7 +7,8 @@
     <div class="bg-image" :style="bgStyle" ref="bgImage">
       <div class="filter"></div>
     </div>
-    <scroll :data="songs" class="list" ref="list">
+    <div class="bg-layer" ref="layer"></div>
+    <scroll @scroll="scroll" :probe-type="probeType" :listen-scroll="listenScroll" :data="songs" class="list" ref="list">
       <div class="song-list-wrapper">
         <song-list :songs="songs"></song-list>
       </div>
@@ -18,6 +19,8 @@
 <script type="text/ecmascript-6">
 import Scroll from '../../base/scroll/scroll'
 import SongList from '../../base/song-list/song-list'
+// import * as pos from 'better-scroll'
+const RESERVED_HEIGHT = 40
 export default {
   props: {
     bgImage: {
@@ -33,13 +36,48 @@ export default {
       default: ''
     }
   },
+  data() {
+    return {
+      scrollY: 0
+    }
+  },
   computed: {
     bgStyle() {
       return `background-image:url(${this.bgImage})`
     }
   },
+  created() {
+    this.probeType = 3
+    this.listenScroll = true
+  },
   mounted() {
-    this.$refs.list.$el.style.top = `${this.$refs.bgImage.clientHeight}px`
+    this.imageHeight = this.$refs.bgImage.clientHeight
+    this.minTransalteY = -this.imageHeight + RESERVED_HEIGHT
+    // this.$refs.list.$el.style.top = `${this.$refs.bgImage.clientHeight}px`  原始高度下面一行代码为上一行代码的缓存高度
+    this.$refs.list.$el.style.top = `${this.imageHeight}px`
+  },
+  methods: {
+    scroll(pos) {
+      this.scrollY = pos.y
+    }
+  },
+  watch: {
+    scrollY(newY) {
+      let tranlateY = Math.max(this.minTransalteY, newY)
+      let zIndex = 0
+      this.$refs.layer.style['transform'] = `translate3d(0,${tranlateY}px,0)`
+      this.$refs.layer.style['webkitTransform'] = `translate3d(0,${tranlateY}px,0)`
+      if (newY < this.minTransalteY) {
+        zIndex = 10
+        this.$refs.bgImage.style.paddingTop = 0
+        this.$refs.bgImage.style.height = `${RESERVED_HEIGHT}px`
+      } else {
+        this.$refs.bgImage.style.paddingTop = '70%'
+        this.$refs.bgImage.style.height = 0
+
+      }
+      this.$refs.bgImage.style.zIndex = zIndex
+    }
   },
   components: {
     Scroll,
