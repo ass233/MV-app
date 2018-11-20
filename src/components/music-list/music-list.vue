@@ -5,7 +5,7 @@
     </div>
     <h1 class="title" v-html="title"></h1>
     <div class="bg-image" :style="bgStyle" ref="bgImage">
-      <div class="filter"></div>
+      <div class="filter" ref="filter"></div>
     </div>
     <div class="bg-layer" ref="layer"></div>
     <scroll @scroll="scroll" :probe-type="probeType" :listen-scroll="listenScroll" :data="songs" class="list" ref="list">
@@ -65,8 +65,19 @@ export default {
     scrollY(newY) {
       let tranlateY = Math.max(this.minTransalteY, newY)
       let zIndex = 0
+      let scale = 1
+      let blur = 0
       this.$refs.layer.style['transform'] = `translate3d(0,${tranlateY}px,0)`
       this.$refs.layer.style['webkitTransform'] = `translate3d(0,${tranlateY}px,0)`
+      const percent = Math.abs(newY / this.imageHeight)
+      if (newY > 0) {
+        scale = 1 + percent
+        zIndex = 10
+      } else {
+        blur = Math.min(20 * percent, 20)
+      }
+      this.$refs.filter.style['backdrop-filter'] = `blur(${blur})px`
+      this.$refs.filter.style['webkitBackdrop-filter'] = `blur(${blur})px`
       if (newY < this.minTransalteY) {
         zIndex = 10
         this.$refs.bgImage.style.paddingTop = 0
@@ -74,9 +85,10 @@ export default {
       } else {
         this.$refs.bgImage.style.paddingTop = '70%'
         this.$refs.bgImage.style.height = 0
-
       }
       this.$refs.bgImage.style.zIndex = zIndex
+      this.$refs.bgImage.style['transform'] = `scale(${scale})`
+      this.$refs.bgImage.style['webkitTransform'] = `scale(${scale})`
     }
   },
   components: {
