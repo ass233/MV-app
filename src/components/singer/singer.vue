@@ -1,97 +1,150 @@
-<template>
-  <div class="singer">
-    <list-view @select="selectSinger" :data="singers"></list-view>
-    <router-view></router-view>
+<template lang="html">
+  <div class="slider" ref="slider">
+    <div class="slider-group" ref="sliderGroup">
+      <slot></slot>
+    </div>
+    <div class="dots">
+      <span class="dot" :class="{active:currentPageIndex === index}" v-for="(item,index) in dots" ></span>
+    </div>
   </div>
 </template>
+
 <script>
-  import { getSingerList } from '../../api/singer'
-  import { ERR_OK } from '../../api/config'
-  import ListView from '../../base/listview/listview'
-  import { mapMutations } from 'vuex'
-  const HOT_NAME = '热门'
-  const HOT_SINGER_LEN = 10
+  import BScroll from 'better-scroll'
+  import { addClass } from '../../common/js/dom'
   export default {
     data() {
       return {
-        singers: []
+        dots: [],
+        currentPageIndex: 0
       }
     },
-    created() {
-      this._getSingerList()
+    props: {
+      loop: {
+        type: Boolean,
+        default: true
+      },
+      autoPlay: {
+        type: Boolean,
+        default: true
+      },
+      interval: {
+        type: Number,
+        default: 3000
+      }
     },
-    methods: {
-      selectSinger(singer) {
-        this.$router.push({
-          path: `/singer/${singer.id}`
-        })
-        this.setSinger(singer)
-      },
-      _getSingerList() {
-        getSingerList().then((res) => {
-          if (res.code === ERR_OK) {
-            this.singers = this._normalizeSinger(res.data.list)
-            // this._normalizeSinger(this.singers)
-          }
-        })
-      },
-      _normalizeSinger(list) {
-        let map = {
-          hot: {
-            title: HOT_NAME,
-            items: []
-          }
+    mounted() {
+      setTimeout(() => {
+        this._setSliderWidth()
+        this._initDots()// 先调用_initslider()   后调用_initDots()就会多俩dot
+        this._initSlider()
+        if (this.autoPlay) {
+          this._play()
         }
-        list.forEach((item, index) => {
-          if (index < HOT_SINGER_LEN) {
-            map.hot.items.push({
-              id: item.Fsinger_mid,
-              name: item.Fsinger_name,
-              avatar: `https://y.gtimg.cn/music/photo_new/T001R300x300M000${item.Fsinger_mid}.jpg?max_age=2592000`
-            })
-          }
-          const key = item.Findex
-          if (!map[key]) {
-            map[key] = {
-              title: key,
-              items: []
-            }
-          }
-          map[key].items.push({
-            id: item.Fsinger_mid,
-            name: item.Fsinger_name,
-            avatar: `https://y.gtimg.cn/music/photo_new/T001R300x300M000${item.Fsinger_mid}.jpg?max_age=2592000`
-          })
-        })
-
-        let ret = []
-        let hot = []
-        for (let key in map) {
-          let val = map[key]
-          if (val.title.match(/[a-zA-Z]/)) {
-            ret.push(val)
-          } else if (val.title === HOT_NAME) {
-            hot.push(val)
-          }
+      }, 20)
+      window.addEventListener('resize', () => {
+        if (!this.slider) {
+          return
         }
-        ret.sort((a, b) => {
-          return a.title.charCodeAt(0) - b.title.charCodeAt(0)
-        })
-        return hot.concat(ret)
-      },
-      ...mapMutations({
-        setSinger: 'SET_SINGER'
+        this._setSliderWidth(true)
+        this.slider.refresh()
       })
     },
-    components: {
-      ListView
+    methods: {
+      _setSliderWidth(isResize) {
+        this.children = this.$refs.sliderGroup.children
+        let width = 0
+        let sliderWidth = this.$refs.slider.clientWidth
+        for (let i = 0; i < this.children.length; i++) {
+          let child = this.children[i]
+          addClass(child, 'slider-item')
+          child.style.width = sliderWidth + 'px'
+          width += sliderWidth
+        }
+        if (this.loop && !isResize) {
+          width += 2 * sliderWidth
+        }
+        this.$refs.sliderGroup.style.width = width + 'px'
+      },
+      _initSlider() {
+        this.slider = new BScroll(this.$refs.slider, {
+          scrollX: true,
+          scrollY: false,
+          momentum: false,
+          snap: true,
+          snapLoop: this.loop,
+          snapThreshold: 0.3,
+          snapSpeed: 400,
+          click: true
+        })
+        this.slider.on('scrollEnd', () => {
+          let pageIndex = this.slider.getCurrentPage().pageX
+          if (this.loop) {
+            pageIndex -= 1
+          }
+          this.currentPageIndex = pageIndex
+          if (this.autoPlay) {
+            clearTimeout(this.timer)
+            this._play()
+          }
+        })
+      },
+      _initDots() {
+        this.dots = new Array(this.children.length)
+      },
+      _play() {
+        let pageIndex = this.currentPageIndex + 1
+        if (this.loop) {
+          pageIndex += 1
+        }
+        this.timer = setTimeout(() => {
+          this.slider.goToPage(pageIndex, 0, 400)
+        }, this.interval)
+      }
+    },
+    destroyed() {
+      clearTimeout(this.timer)
     }
   }
 </script>
+
 <style scoped lang="stylus" rel="stylesheet/stylus">
-  .singer
-    position: fixed
-    top: 88px
-    bottom: 0
-    width: 100%
+  @import "~common/stylus/variable"
+  .slider
+    min-height: 1px
+    .slider-group
+      position: relative
+      overflow: hidden
+      white-space: nowrap
+      .slider-item
+        float: left
+        box-sizing: border-box
+        overflow: hidden
+        text-align: center
+        a
+          display: block
+          width: 100%
+          overflow: hidden
+          text-decoration: none
+        img
+          display: block
+          width: 100%
+    .dots
+      position: absolute
+      right: 0
+      left: 0
+      bottom: 12px
+      text-align: center
+      font-size: 0
+      .dot
+        display: inline-block
+        margin: 0 4px
+        width: 8px
+        height: 8px
+        border-radius: 50%
+        background: $color-text-l
+        &.active
+          width: 20px
+          border-radius: 5px
+          background: $color-text-ll
 </style>
