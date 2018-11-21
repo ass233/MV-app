@@ -9,8 +9,8 @@ import 'common/stylus/index.styl'
 
 fastclick.attach(document.body)
 /* eslint-disable no-new */
-Vue.use(Vuelazyload,{
-  loading:require('./common/image/default.png')
+Vue.use(Vuelazyload, {
+  loading: require('./common/image/default.png')
 })
 new Vue({
   el: '#app',

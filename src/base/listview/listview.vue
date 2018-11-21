@@ -39,115 +39,115 @@ import Scroll from '../scroll/scroll'
 import { getData } from '../../common/js/dom'
 const ANCHOR_HEIGHT = 18
 export default {
-  created(){
+  created() {
     this.touch = {}
     this.listenScroll = true
     this.listHeight = []
     this.probeType = 3
     this.TITLE_HEIGHT = 30
   },
-  data(){
-    return{
-      scrollY:-1,
-      currentIndex:0
+  data() {
+    return {
+      scrollY: -1,
+      currentIndex: 0
     }
   },
-  props:{
-    data:{
-      type:Array,
-      default:[]
+  props: {
+    data: {
+      type: Array,
+      default: []
     }
   },
-  computed:{
-    shortcutList(){
-      return this.data.map((group)=>{
-        return group.title.substr(0,1)
+  computed: {
+    shortcutList() {
+      return this.data.map((group) => {
+        return group.title.substr(0, 1)
       })
     },
-    fixedTitle(){
-      if(this.scrollY > 0){
+    fixedTitle() {
+      if (this.scrollY > 0) {
         return ''
       }
-      return this.data[this.currentIndex]?this.data[this.currentIndex].title:''
+      return this.data[this.currentIndex] ? this.data[this.currentIndex].title : ''
     }
   },
-  methods:{
-    onShortcutTouchStart(e){
-      let anchorIndex = getData(e.target,'index')
+  methods: {
+    onShortcutTouchStart(e) {
+      let anchorIndex = getData(e.target, 'index')
       let firstTouch = e.touches[0]
       this.touch.y1 = firstTouch.pageY
       this.touch.anchorIndex = anchorIndex
       this._scrollTo(anchorIndex)
     },
-    onShortcutTouchMove(e){
+    onShortcutTouchMove(e) {
       let firstTouch = e.touches[0]
       this.touch.y2 = firstTouch.pageY
-      let delta = (this.touch.y2 - this.touch.y1)/ANCHOR_HEIGHT | 0
-      let anchorIndex =parseInt(this.touch.anchorIndex) + delta
+      let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0
+      let anchorIndex = parseInt(this.touch.anchorIndex) + delta
       this._scrollTo(anchorIndex)
     },
-    _scrollTo(index){
-      if(!index && index != 0){
+    _scrollTo(index) {
+      if (!index && index !== 0) {
         return
       }
-      if(index<0){
+      if (index < 0) {
         index = 0
-      }else if(index > this.listHeight.length - 2){
+      } else if (index > this.listHeight.length - 2) {
         index = this.listHeight.length - 2
       }
       this.scrollY = -this.listHeight[index]
-      this.$refs.listview.scrollToElement(this.$refs.listGroup[index],0)
+      this.$refs.listview.scrollToElement(this.$refs.listGroup[index], 0)
     },
-    scroll(pos){
+    scroll(pos) {
       this.scrollY = pos.y
     },
-    _calculateHeight(){
+    _calculateHeight() {
       this.listHeight = []
       const list = this.$refs.listGroup
       let height = 0
       this.listHeight.push(height)
-      for(let i =0;i<list.length;i++){
+      for (let i = 0; i < list.length; i++) {
         let item = list[i]
         height += item.clientHeight
         this.listHeight.push(height)
       }
     }
   },
-  watch:{
-    data(){
-      setTimeout(()=>{
+  watch: {
+    data() {
+      setTimeout(() => {
         this._calculateHeight()
-      },20)
+      }, 20)
     },
-    scrollY(newY){
+    scrollY(newY) {
       const listHeight = this.listHeight
-      //当滚动到顶部，newY>0
-      if(newY > 0){
+      // 当滚动到顶部，newY>0
+      if (newY > 0) {
         this.currentIndex = 0
         return
       }
-      for(let i = 0;i<listHeight.length - 1;i++){
+      for (let i = 0; i < listHeight.length - 1; i++) {
         let height1 = listHeight[i]
-        let height2 = listHeight[i+1]
-        if(-newY >= height1 && -newY < height2){
+        let height2 = listHeight[i + 1]
+        if (-newY >= height1 && -newY < height2) {
           this.currentIndex = i
-          console.log(this.currentIndex);
+          console.log(this.currentIndex)
           return
         }
       }
-      //当滚动到底部 且-newY大于最后一个元素的上限
+      // 当滚动到底部 且-newY大于最后一个元素的上限
       this.currentIndex = listHeight.length - 2
     },
-    diff(newVal){
-      let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT)? newVal - TITLE_HEIGHT:0
-      if(this.fixedTop === fixedTop){
+    diff(newVal) {
+      let fixedTop = (newVal > 0 && newVal < TITLE_HEIGHT) ? newVal - TITLE_HEIGHT : 0
+      if (this.fixedTop === fixedTop) {
         return
       }
       this.fixedTop = fixedTop
       this.$refs.fixed.style.transform = `translate3d(0,${fixedTop}px,0)`
-    },
+    }
   },
-  components:{
+  components: {
     Scroll
   }
 }
