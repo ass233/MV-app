@@ -10,7 +10,6 @@
       <li v-for="group in data" class="list-group" ref="listGroup">
         <h2 class="list-group-items">{{ group.title}}</h2>
         <ul>
-          11
           <li @click="selectItem(item)" v-for="item in group.items" class="list-group-item">
             <img class="avatar" v-lazy="item.avatar" alt=""/>
             <span class="name">{{item.name}}</span>
