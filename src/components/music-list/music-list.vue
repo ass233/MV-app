@@ -17,7 +17,7 @@
     <div class="bg-layer" ref="layer"></div>
     <scroll @scroll="scroll" :probe-type="probeType" :listen-scroll="listenScroll" :data="songs" class="list" ref="list">
       <div class="song-list-wrapper">
-        <song-list :songs="songs"></song-list>
+        <song-list @select="selectItem" :songs="songs"></song-list>
       </div>
     </scroll>
   </div>
@@ -27,6 +27,7 @@
 import Scroll from '../../base/scroll/scroll'
 import SongList from '../../base/song-list/song-list'
 import { perfixStyle } from '../../common/js/dom'
+import { mapActions } from 'vuex'
 // import * as pos from 'better-scroll'
 const RESERVED_HEIGHT = 40
 const transform = perfixStyle('transform')
@@ -74,6 +75,15 @@ export default {
     back() {
       this.$router.back()
     },
+    selectItem(item,index){
+      this.selectPlay({
+        list:this.songs,
+        index
+      })
+    },
+    ...mapActions([
+      'selectPlay'
+    ])
   },
 
   watch: {
