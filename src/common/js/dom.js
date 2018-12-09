@@ -54,3 +54,6 @@ export function perfixStyle(style) {
 
   return vendor + style.charAt(0).toUpperCase() + style.substr(1)
 }
+
+export class prefixStyle {
+}
